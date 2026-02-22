@@ -1,10 +1,14 @@
 package com.afkstatstracker;
 
+import com.google.gson.Gson;
 import com.google.inject.Provides;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -42,12 +46,37 @@ public class AfkStatsTrackerPlugin extends Plugin
 	private long startTime;
 	private boolean isTracking = false;
 
+	@Inject
+	private ConfigManager configManager;
+
+	private SessionHistoryManager sessionHistoryManager;
+
 	@Override
 	protected void startUp() throws Exception
 	{
+		Gson gson = new Gson();
+		SessionHistoryManager.ConfigStorage storage = new SessionHistoryManager.ConfigStorage()
+		{
+			private static final String CONFIG_GROUP = "afkStatsTracker";
+			private static final String CONFIG_KEY = "sessionHistory";
+
+			@Override
+			public String load()
+			{
+				return configManager.getConfiguration(CONFIG_GROUP, CONFIG_KEY);
+			}
+
+			@Override
+			public void save(String json)
+			{
+				configManager.setConfiguration(CONFIG_GROUP, CONFIG_KEY, json);
+			}
+		};
+		sessionHistoryManager = new SessionHistoryManager(storage, gson);
+
 		log.info("AFK Stats Tracker plugin started!");
 
-		panel = new AfkStatsTrackerPanel(this);
+		panel = new AfkStatsTrackerPanel(this, sessionHistoryManager);
 
 		// Add to toolbar
 		navButton = NavigationButton.builder()
@@ -85,6 +114,27 @@ public class AfkStatsTrackerPlugin extends Plugin
 
 	public void stopSession()
 	{
+		if (!isTracking)
+		{
+			return;
+		}
+
+		long endTime = System.currentTimeMillis();
+		String id = UUID.randomUUID().toString();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		String name = "Session " + dateFormat.format(new Date(startTime));
+
+		Session session = new Session(
+			id,
+			name,
+			startTime,
+			endTime,
+			getClickCount(),
+			getConsistency(),
+			getAverageClickInterval()
+		);
+
+		sessionHistoryManager.addSession(session);
 		isTracking = false;
 	}
 
@@ -145,6 +195,11 @@ public class AfkStatsTrackerPlugin extends Plugin
         }
         return sum / intervals.size();
     }
+
+	public int getClickCount()
+	{
+		return mouseListener.getClickCounter().size();
+	}
 
 	@Provides
 	AfkStatsTrackerConfig provideConfig(ConfigManager configManager)
