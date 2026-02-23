@@ -6,8 +6,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -195,20 +193,13 @@ public class AfkStatsTrackerPanel extends PluginPanel
 
 		// Buttons
 		JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-		JButton copyButton = new JButton("Copy");
 		JButton deleteButton = new JButton("Delete");
-
-		copyButton.addActionListener(e -> {
-			StringSelection selection = new StringSelection(session.toClipboardText());
-			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
-		});
 
 		deleteButton.addActionListener(e -> {
 			sessionHistoryManager.deleteSession(session.getId());
 			refreshHistoryPanel();
 		});
 
-		buttonRow.add(copyButton);
 		buttonRow.add(deleteButton);
 
 		JPanel textPanel = new JPanel(new GridLayout(2, 1));

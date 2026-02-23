@@ -44,21 +44,4 @@ public class SessionTest
         assertEquals("New Name", session.getName());
     }
 
-    @Test
-    public void testToClipboardText()
-    {
-        Session session = new Session(
-            "test-id",
-            "Fishing Session",
-            1708523400000L,  // Feb 21 2024 14:30:00 UTC
-            1708527000000L,  // Feb 21 2024 15:30:00 (60 min later)
-            42,
-            85L,
-            45000.0
-        );
-
-        String clipboardText = session.toClipboardText();
-
-        assertEquals("{ name = \"Fishing Session\", group = \"\", consistency = 85, interval = 45000, clicks = 42, duration = 60 },", clipboardText);
-    }
 }
