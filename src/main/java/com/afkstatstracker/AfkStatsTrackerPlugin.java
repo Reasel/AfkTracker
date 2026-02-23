@@ -49,12 +49,14 @@ public class AfkStatsTrackerPlugin extends Plugin
 	@Inject
 	private ConfigManager configManager;
 
+	@Inject
+	private Gson gson;
+
 	private SessionHistoryManager sessionHistoryManager;
 
 	@Override
 	protected void startUp() throws Exception
 	{
-		Gson gson = new Gson();
 		SessionHistoryManager.ConfigStorage storage = new SessionHistoryManager.ConfigStorage()
 		{
 			private static final String CONFIG_GROUP = "afkStatsTracker";
