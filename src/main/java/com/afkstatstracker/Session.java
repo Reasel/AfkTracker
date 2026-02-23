@@ -34,7 +34,7 @@ public class Session
     public String toClipboardText()
     {
         long durationMin = (endTime - startTime) / 60000;
-        return String.format("|-\n| %s || || %d || %.0f || %d || %d",
+        return String.format("\t{ name = \"%s\", group = \"\", consistency = %d, interval = %.0f, clicks = %d, duration = %d },",
             name, consistencyScore, avgInterval, clickCount, durationMin);
     }
 }

@@ -59,6 +59,6 @@ public class SessionTest
 
         String clipboardText = session.toClipboardText();
 
-        assertEquals("|-\n| Fishing Session || || 85 || 45000 || 42 || 60", clipboardText);
+        assertEquals("\t{ name = \"Fishing Session\", group = \"\", consistency = 85, interval = 45000, clicks = 42, duration = 60 },", clipboardText);
     }
 }
