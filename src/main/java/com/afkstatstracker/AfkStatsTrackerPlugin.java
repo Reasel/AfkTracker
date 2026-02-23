@@ -81,7 +81,7 @@ public class AfkStatsTrackerPlugin extends Plugin
 		// Add to toolbar
 		navButton = NavigationButton.builder()
 			.tooltip("AFK Stats Tracker")
-			.icon(ImageUtil.loadImageResource(getClass(), "kofi.png")) // Need to add icon
+			.icon(ImageUtil.loadImageResource(getClass(), "icon.png")) // Need to add icon
 			.panel(panel)
 			.build();
 
