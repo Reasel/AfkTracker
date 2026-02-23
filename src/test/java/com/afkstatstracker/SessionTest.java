@@ -51,7 +51,7 @@ public class SessionTest
             "test-id",
             "Fishing Session",
             1708523400000L,  // Feb 21 2024 14:30:00 UTC
-            1708527000000L,
+            1708527000000L,  // Feb 21 2024 15:30:00 (60 min later)
             42,
             85L,
             45000.0
@@ -59,9 +59,6 @@ public class SessionTest
 
         String clipboardText = session.toClipboardText();
 
-        assertTrue(clipboardText.contains("Fishing Session"));
-        assertTrue(clipboardText.contains("Consistency: 85"));
-        assertTrue(clipboardText.contains("Avg: 45000ms"));
-        assertTrue(clipboardText.contains("Clicks: 42"));
+        assertEquals("{ name = \"Fishing Session\", group = \"\", consistency = 85, interval = 45000, clicks = 42, duration = 60 },", clipboardText);
     }
 }
