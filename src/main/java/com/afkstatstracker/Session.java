@@ -31,10 +31,4 @@ public class Session
     public long getConsistencyScore() { return consistencyScore; }
     public double getAvgInterval() { return avgInterval; }
 
-    public String toClipboardText()
-    {
-        long durationMin = (endTime - startTime) / 60000;
-        return String.format("{ name = \"%s\", group = \"\", consistency = %d, interval = %.0f, clicks = %d, duration = %d },",
-            name, consistencyScore, avgInterval, clickCount, durationMin);
-    }
 }
