@@ -1,8 +1,5 @@
 package com.afkstatstracker;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class Session
 {
     private final String id;
@@ -36,9 +33,8 @@ public class Session
 
     public String toClipboardText()
     {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy");
-        String dateStr = dateFormat.format(new Date(startTime));
-        return String.format("Session: %s | %s | Consistency: %d | Avg: %.0fms | Clicks: %d",
-            name, dateStr, consistencyScore, avgInterval, clickCount);
+        long durationMin = (endTime - startTime) / 60000;
+        return String.format("|-\n| %s || || %d || %.0f || %d || %d",
+            name, consistencyScore, avgInterval, clickCount, durationMin);
     }
 }
