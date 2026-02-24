@@ -63,7 +63,7 @@ jobs:
           else
             PR_URL=$(gh pr create \
               --repo runelite/plugin-hub \
-              --title "update afk-stats-tracker" \
+              --title "Update AFK Stats Tracker" \
               --body "Update commit to ${{ steps.sha.outputs.sha }}" \
               --base master \
               --head Reasel:afk-stats-tracker)
