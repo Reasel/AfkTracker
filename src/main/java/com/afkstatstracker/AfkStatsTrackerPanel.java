@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -19,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
@@ -31,8 +33,8 @@ public class AfkStatsTrackerPanel extends PluginPanel
 	private Timer timer;
 	private JButton startButton;
 	private JButton stopButton;
-	private JLabel consistencyLabel;
-	private JLabel averageClickIntervalLabel;
+	private JLabel consistencyValueLabel;
+	private JLabel avgIntervalValueLabel;
 
 	private JPanel historyContainer;
 	private boolean historyExpanded = true;
@@ -79,15 +81,20 @@ public class AfkStatsTrackerPanel extends PluginPanel
 		buttonPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, buttonPanel.getPreferredSize().height));
 
 		// Stats panel
-		JPanel statsPanel = new JPanel(new GridLayout(2, 1));
-		consistencyLabel = new JLabel("Consistency: 0");
-		averageClickIntervalLabel = new JLabel("Average Click Interval: 0");
+		JPanel statsPanel = new JPanel();
+		statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
+		statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
 
-		consistencyLabel.setToolTipText("Score (0-100) indicating how consistent click intervals are; higher means more regular timing.");
-		averageClickIntervalLabel.setToolTipText("Average time between clicks in ms");
+		JPanel consistencyPanel = createStatCard("Consistency",
+			"Score (0-100) indicating how consistent click intervals are; higher means more regular timing.");
+		consistencyValueLabel = (JLabel) ((BorderLayout) consistencyPanel.getLayout()).getLayoutComponent(BorderLayout.CENTER);
 
-		statsPanel.add(consistencyLabel);
-		statsPanel.add(averageClickIntervalLabel);
+		JPanel avgIntervalPanel = createStatCard("Avg Click Interval",
+			"Average time between clicks in ms");
+		avgIntervalValueLabel = (JLabel) ((BorderLayout) avgIntervalPanel.getLayout()).getLayoutComponent(BorderLayout.CENTER);
+
+		statsPanel.add(consistencyPanel);
+		statsPanel.add(avgIntervalPanel);
 		statsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, statsPanel.getPreferredSize().height));
 
 		// History section
@@ -98,6 +105,28 @@ public class AfkStatsTrackerPanel extends PluginPanel
 		contentPanel.add(historySection);
 
 		add(contentPanel, BorderLayout.NORTH);
+	}
+
+	private JPanel createStatCard(String title, String tooltip)
+	{
+		JPanel card = new JPanel(new BorderLayout());
+		card.setBorder(BorderFactory.createCompoundBorder(
+			BorderFactory.createMatteBorder(1, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR),
+			BorderFactory.createEmptyBorder(8, 5, 8, 5)
+		));
+		card.setToolTipText(tooltip);
+
+		JLabel titleLabel = new JLabel(title);
+		titleLabel.setForeground(Color.GRAY);
+		card.add(titleLabel, BorderLayout.NORTH);
+
+		JLabel valueLabel = new JLabel("0");
+		valueLabel.setFont(valueLabel.getFont().deriveFont(Font.BOLD, 20f));
+		valueLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		card.add(valueLabel, BorderLayout.CENTER);
+
+		card.setMaximumSize(new Dimension(Integer.MAX_VALUE, card.getPreferredSize().height));
+		return card;
 	}
 
 	private JPanel createHistorySection()
@@ -216,6 +245,9 @@ public class AfkStatsTrackerPanel extends PluginPanel
 	private void makeEditable(JPanel row, Session session, JLabel nameLabel)
 	{
 		JTextField textField = new JTextField(session.getName());
+		textField.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+		Dimension pref = textField.getPreferredSize();
+		textField.setPreferredSize(new Dimension(pref.width, pref.height + 5));
 		textField.selectAll();
 
 		Runnable saveAndRestore = () -> {
@@ -257,8 +289,8 @@ public class AfkStatsTrackerPanel extends PluginPanel
 
 	public void updateStats()
 	{
-		consistencyLabel.setText("Consistency: " + plugin.getConsistency());
-		averageClickIntervalLabel.setText("Average Click Interval: " + String.format("%.0f", plugin.getAverageClickInterval()));
+		consistencyValueLabel.setText(String.valueOf(plugin.getConsistency()));
+		avgIntervalValueLabel.setText(String.format("%.0f ms", plugin.getAverageClickInterval()));
 	}
 
 	public void stopTimer()
