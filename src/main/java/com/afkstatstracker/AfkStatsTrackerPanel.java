@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
@@ -14,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -173,6 +173,7 @@ public class AfkStatsTrackerPanel extends PluginPanel
 		for (Session session : sessionHistoryManager.getSessions())
 		{
 			historyContainer.add(createSessionRow(session));
+			historyContainer.add(Box.createRigidArea(new Dimension(0, 3)));
 		}
 
 		if (sessionHistoryManager.getSessions().isEmpty())
@@ -220,23 +221,26 @@ public class AfkStatsTrackerPanel extends PluginPanel
 			session.getClickCount()));
 		statsLabel.setForeground(Color.GRAY);
 
-		// Buttons
-		JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-		JButton deleteButton = new JButton("Delete");
-
-		deleteButton.addActionListener(e -> {
-			sessionHistoryManager.deleteSession(session.getId());
-			refreshHistoryPanel();
+		// Delete icon
+		JLabel deleteIcon = new JLabel("\uD83D\uDDD1");
+		deleteIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		deleteIcon.setToolTipText("Delete session");
+		deleteIcon.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				sessionHistoryManager.deleteSession(session.getId());
+				refreshHistoryPanel();
+			}
 		});
-
-		buttonRow.add(deleteButton);
 
 		JPanel textPanel = new JPanel(new GridLayout(2, 1));
 		textPanel.add(nameLabel);
 		textPanel.add(statsLabel);
 
 		row.add(textPanel, BorderLayout.CENTER);
-		row.add(buttonRow, BorderLayout.SOUTH);
+		row.add(deleteIcon, BorderLayout.EAST);
 
 		row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
 		return row;
