@@ -1,0 +1,73 @@
+name: Deploy to Plugin Hub
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout AfkTracker
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 1
+
+      - name: Get latest commit SHA
+        id: sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Clone plugin-hub fork
+        run: |
+          git clone https://x-access-token:${{ secrets.PLUGIN_HUB_PAT }}@github.com/Reasel/plugin-hub.git /tmp/plugin-hub
+
+      - name: Prepare branch
+        working-directory: /tmp/plugin-hub
+        run: |
+          git remote add upstream https://github.com/runelite/plugin-hub.git
+          git fetch upstream
+          git checkout -B afk-stats-tracker upstream/master
+
+      - name: Update manifest
+        working-directory: /tmp/plugin-hub
+        run: |
+          cat > plugins/afk-stats-tracker << EOF
+          repository=https://github.com/Reasel/AfkTracker.git
+          commit=${{ steps.sha.outputs.sha }}
+          EOF
+
+      - name: Commit and push
+        working-directory: /tmp/plugin-hub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add plugins/afk-stats-tracker
+          if git diff --cached --quiet; then
+            echo "::notice::Manifest already up to date, nothing to deploy."
+            exit 0
+          fi
+          git commit -m "update afk-stats-tracker"
+          git push --force origin afk-stats-tracker
+
+      - name: Create or update PR
+        working-directory: /tmp/plugin-hub
+        env:
+          GH_TOKEN: ${{ secrets.PLUGIN_HUB_PAT }}
+        run: |
+          EXISTING_PR=$(gh pr list --repo runelite/plugin-hub --head Reasel:afk-stats-tracker --state open --json number --jq '.[0].number')
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Existing PR #${EXISTING_PR} updated via force-push"
+            PR_URL="https://github.com/runelite/plugin-hub/pull/${EXISTING_PR}"
+          else
+            PR_URL=$(gh pr create \
+              --repo runelite/plugin-hub \
+              --title "update afk-stats-tracker" \
+              --body "Update commit to ${{ steps.sha.outputs.sha }}" \
+              --base master \
+              --head Reasel:afk-stats-tracker)
+          fi
+          echo "## Deploy Complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Commit:** \`${{ steps.sha.outputs.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**PR:** ${PR_URL}" >> "$GITHUB_STEP_SUMMARY"
